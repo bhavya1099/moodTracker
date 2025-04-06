@@ -8,32 +8,34 @@ export default function QuoteWindow({ mood, name }) {
   const [openSpotify, setOpenSpotify] = useState(false);
   console.log("mood value", mood);
   useEffect(() => {
-    const fetchQuote = async () => {
-      const client = new OpenAI({
-        apiKey: "", //process.env.REACT_APP_OPENAI_API_KEY, // Store API key securely
-        dangerouslyAllowBrowser: true, // Needed if running in the browser
-      });
+    setQuote("You are a great human.");
+    // const fetchQuote = async () => {
+    //   const client = new OpenAI({
+    //     apiKey:
+    //       "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", //process.env.REACT_APP_OPENAI_API_KEY, // Store API key securely
+    //     dangerouslyAllowBrowser: true, // Needed if running in the browser
+    //   });
 
-      try {
-        const response = await client.chat.completions.create({
-          model: "gpt-4o",
-          messages: [
-            {
-              role: "user",
-              content: `Write a quote for a user named ${name} as he/she feels ${mood}`,
-            },
-          ],
-        });
-        console.log("ans", response.choices[0]?.message);
-        setQuote(
-          response.choices[0]?.message?.content || "No response received."
-        );
-      } catch (error) {
-        console.error("Error fetching quote:", error);
-        setQuote("Failed to fetch quote.");
-      }
-    };
-    fetchQuote();
+    //   try {
+    //     const response = await client.chat.completions.create({
+    //       model: "gpt-4o",
+    //       messages: [
+    //         {
+    //           role: "user",
+    //           content: `Write a quote for a user named ${name} as he/she feels ${mood}`,
+    //         },
+    //       ],
+    //     });
+    //     console.log("ans", response.choices[0]?.message);
+    //     setQuote(
+    //       response.choices[0]?.message?.content || "No response received."
+    //     );
+    //   } catch (error) {
+    //     console.error("Error fetching quote:", error);
+    //     setQuote("Failed to fetch quote.");
+    //   }
+    // };
+    // fetchQuote();
   }, []);
 
   const chooseImg = () => {

@@ -1,116 +1,122 @@
-import React from "react";
+// src/pages/SpotifyPage.js
 import { useEffect, useState } from "react";
+import { useRouter } from "next/router";
 
-export default function SpotifyPage() {
-  const [profile, setProfile] = useState(null);
-  const clientId = "";
-
+const SpotifyPage = () => {
+  const [accessToken, setAccessToken] = useState(null);
+  const [tracks, setTracks] = useState([]);
+  const router = useRouter();
+  console.log("access token value", accessToken);
   useEffect(() => {
-    const code = getCodeFromURL();
-
-    if (!code) {
-      redirectToAuthCodeFlow(clientId);
-    } else {
-      (async () => {
-        const accessToken = await getAccessToken(clientId, code);
-        const profileData = await fetchProfile(accessToken);
-        setProfile(profileData);
-      })();
+    console.log("use effect is called");
+    const code = new URLSearchParams(window.location.search).get("code");
+    if (code && !accessToken) {
+      console.log("fetch access token is called");
+      fetchAccessToken(code).then(() => {
+        // ✅ Clean the URL so fetchAccessToken won't run again
+        const cleanUrl = window.location.origin + router.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+      });
     }
   }, []);
 
-  function getCodeFromURL() {
-    if (typeof window === "undefined") return null;
-    const params = new URLSearchParams(window.location.search);
-    return params.get("code");
-  }
-
-  async function redirectToAuthCodeFlow(clientId) {
+  async function redirectToSpotify() {
     const verifier = generateCodeVerifier(128);
     const challenge = await generateCodeChallenge(verifier);
+
     localStorage.setItem("verifier", verifier);
 
-    const params = new URLSearchParams();
-    params.append("client_id", clientId);
-    params.append("response_type", "code");
-    params.append("redirect_uri", "http://localhost:3000/spotify");
-    params.append("scope", "user-read-private user-read-email");
-    params.append("code_challenge_method", "S256");
-    params.append("code_challenge", challenge);
+    const params = new URLSearchParams({
+      client_id: "",
+      response_type: "code",
+      redirect_uri: "http://localhost:3000/callback", // Make sure this matches your Spotify app settings
+      scope: "user-read-private user-read-email user-library-read",
+      code_challenge_method: "S256",
+      code_challenge: challenge,
+    });
 
-    document.location = `https://accounts.spotify.com/authorize?${params.toString()}`;
+    window.location.href = `https://accounts.spotify.com/authorize?${params.toString()}`;
   }
 
   function generateCodeVerifier(length) {
     const possible =
-      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
-    return Array.from(crypto.getRandomValues(new Uint8Array(length)))
-      .map((x) => possible[x % possible.length])
-      .join("");
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-._~";
+    let verifier = "";
+    for (let i = 0; i < length; i++) {
+      verifier += possible.charAt(Math.floor(Math.random() * possible.length));
+    }
+    return verifier;
   }
 
   async function generateCodeChallenge(codeVerifier) {
-    const data = new TextEncoder().encode(codeVerifier);
+    const encoder = new TextEncoder();
+    const data = encoder.encode(codeVerifier);
     const digest = await window.crypto.subtle.digest("SHA-256", data);
-    return btoa(String.fromCharCode(...new Uint8Array(digest)))
+    const base64Digest = btoa(String.fromCharCode(...new Uint8Array(digest)))
       .replace(/\+/g, "-")
       .replace(/\//g, "_")
-      .replace(/=+$/, "");
+      .replace(/=+$/, ""); // Base64url encoding
+    return base64Digest;
   }
 
-  async function getAccessToken(clientId, code) {
+  const fetchAccessToken = async (code) => {
     const verifier = localStorage.getItem("verifier");
-
-    const params = new URLSearchParams();
-    params.append("client_id", clientId);
-    params.append("grant_type", "authorization_code");
-    params.append("code", code);
-    params.append("redirect_uri", "http://localhost:3000/spotify");
-    params.append("code_verifier", verifier);
-
-    const result = await fetch("https://accounts.spotify.com/api/token", {
+    const response = await fetch("/api/getAccessToken", {
       method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: params,
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ code, verifier }),
     });
+    const data = await response.json();
+    console.log("data from access token api", data);
+    setAccessToken(data.access_token);
+  };
 
-    const { access_token } = await result.json();
-    return access_token;
-  }
-
-  async function fetchProfile(token) {
-    const result = await fetch("https://api.spotify.com/v1/me", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-
-    return result.json();
-  }
+  const fetchSongsByGenre = async (genre) => {
+    const res = await fetch(
+      `https://api.spotify.com/v1/search?q=genre:${genre}&type=track&limit=10`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+    const data = await res.json();
+    console.log("fetch songs by genre", data);
+    setTracks(data.tracks.items);
+  };
 
   return (
-    <div className="p-6">
-      <h1 className="text-2xl font-bold mb-4">Spotify Profile</h1>
-      {!profile && <p>Loading...</p>}
-      {profile && (
-        <div className="space-y-2">
-          <p>
-            <strong>Name:</strong> {profile.display_name}
-          </p>
-          <p>
-            <strong>Email:</strong> {profile.email}
-          </p>
-          <p>
-            <strong>ID:</strong> {profile.id}
-          </p>
-          {profile.images?.[0] && (
-            <img
-              src={profile.images[0].url}
-              alt="Avatar"
-              width={200}
-              height={200}
-            />
-          )}
-        </div>
+    <div className="p-6 text-white">
+      <h1 className="text-3xl font-bold mb-4">Spotify Mood Songs 🎵</h1>
+
+      {!accessToken ? (
+        <button
+          onClick={redirectToSpotify}
+          className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+        >
+          Connect to Spotify
+        </button>
+      ) : (
+        <>
+          <input
+            type="text"
+            placeholder="Enter genre (e.g., pop, jazz, chill)"
+            onKeyDown={(e) => {
+              if (e.key === "Enter") fetchSongsByGenre(e.target.value);
+            }}
+            className="text-black p-2 rounded"
+          />
+          <ul className="mt-4">
+            {tracks.map((track) => (
+              <li key={track.id}>
+                {track.name} by {track.artists[0].name}
+              </li>
+            ))}
+          </ul>
+        </>
       )}
     </div>
   );
-}
+};
+
+export default SpotifyPage;

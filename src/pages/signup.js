@@ -27,7 +27,6 @@ export default function signup() {
         setMessage("Signup successful! 🎉");
         setEmail("");
         setPassword("");
-        //setName("");
         setUser({
           userId: data.userId,
           name: data.userName,
