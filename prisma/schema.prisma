@@ -1,0 +1,27 @@
+datasource db {
+  provider = "postgresql"  // Use "mysql" if using PostgreSQL
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id         Int     @id @default(autoincrement())
+  name       String @default("Unknown") 
+  email      String  @unique
+  password   String
+  moods      MoodEntry[]
+}
+
+model MoodEntry {
+  id         Int      @id @default(autoincrement())
+  user       User     @relation(fields: [userId], references: [id])
+  userId     Int
+  moodType   String   // Example: "Happy", "Sad", "Anxious"
+  journal    String?  // Optional journal entry
+  createdAt  DateTime @default(now())
+}
+
+
