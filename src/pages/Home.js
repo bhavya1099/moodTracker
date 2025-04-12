@@ -7,6 +7,7 @@ export default function Home() {
   const [emotions, setEmotions] = useState([]);
   const [openAi, setOpenAi] = useState(false);
   const [mood, setMood] = useState("");
+  const [journal, setJournal] = useState("");
   const { logout, user, setUser } = useUser();
   let emotionsArray = [
     { img: "/assets/happy.jpeg", name: "Happy" },
@@ -40,6 +41,23 @@ export default function Home() {
     }
   };
 
+  const saveJournal = async () => {
+    console.log("user value", user);
+    const { email } = user;
+    const res = await fetch("/api/addJournal", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, journal, user }),
+    });
+    const data = await res.json();
+
+    if (res.status == 201) {
+      console.log("inside");
+      setJournal("");
+      console.log("response", res);
+    }
+  };
+
   return (
     <div className="bg-[url('/assets/moods.jpeg')] min-h-screen bg-gradient-to-b from-blue-50 to-indigo-100 p-6 bg-opacity-50">
       <div className="max-w-3xl mx-auto">
@@ -52,6 +70,15 @@ export default function Home() {
             Logout
           </button>
         </div>
+        <div className="flex justify-center gap-4 mb-6">
+          <button className="bg-white text-indigo-700 font-semibold px-4 py-2 rounded-xl hover:bg-indigo-100 shadow">
+            Mood History
+          </button>
+          <button className="bg-white text-indigo-700 font-semibold px-4 py-2 rounded-xl hover:bg-indigo-100 shadow">
+            Journal Entries
+          </button>
+        </div>
+
         {!openAi ? (
           <div className="bg-white bg-opacity-50 rounded-2xl shadow p-6 mb-8 ">
             <>
@@ -102,8 +129,15 @@ export default function Home() {
           <textarea
             placeholder="Write how you feel..."
             className="w-full p-4 border border-gray-300 rounded-xl resize-none h-32 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+            onChange={(e) => {
+              setJournal(e.target.value);
+            }}
+            value={journal}
           ></textarea>
-          <button className="mt-4 bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700">
+          <button
+            className="mt-4 bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700"
+            onClick={() => saveJournal()}
+          >
             Save Entry
           </button>
         </div>
