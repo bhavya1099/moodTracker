@@ -159,9 +159,9 @@ export default function Home() {
             </div>
           </>
         ) : activeTab == "moodEntries" ? (
-          <MoodEntries />
+          <MoodEntries setActiveTab={setActiveTab} activeTab={activeTab} />
         ) : activeTab == "moodHistory" ? (
-          <MoodHistory />
+          <MoodHistory setActiveTab={setActiveTab} activeTab={activeTab} />
         ) : (
           <QouteWindow mood={mood} name={user?.name} />
         )}
