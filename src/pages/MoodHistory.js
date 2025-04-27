@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useUser } from "./context/userContext";
+import Link from "next/link";
 import {
   ScatterChart,
   Scatter,
@@ -85,48 +86,57 @@ export default function MoodHistory(props) {
   };
 
   return (
-    <div className="bg-white p-6 rounded-2xl shadow-md w-full max-w-4xl mx-auto">
-      <h2 className="text-xl font-semibold text-gray-800 mb-4">Mood History</h2>
-      <ResponsiveContainer width="100%" height={400}>
-        <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
-          <XAxis
-            type="number"
-            dataKey="timestamp"
-            domain={["auto", "auto"]}
-            tickFormatter={(val) => {
-              const d = new Date(val);
-              return `${d.getDate()}/${d.getMonth() + 1}`;
-            }}
-            stroke="#ccc"
-            axisLine={false}
-            tickLine={false}
-          />
-          <YAxis
-            type="number"
-            dataKey="hour"
-            domain={[0, 24]}
-            tickFormatter={(val) => `${Math.floor(val)}:00`}
-            stroke="#ccc"
-            axisLine={false}
-            tickLine={false}
-          />
-          <Tooltip
-            formatter={(value, name, props) => {
-              if (name === "hour") {
-                const hours = Math.floor(value);
-                const minutes = Math.round((value - hours) * 60);
-                return `${hours}:${minutes.toString().padStart(2, "0")}`;
-              }
-              return value;
-            }}
-            labelFormatter={(val) => {
-              const d = new Date(val);
-              return d.toLocaleDateString();
-            }}
-          />
-          <Scatter data={moodLogs} shape={<EmojiShape />} />
-        </ScatterChart>
-      </ResponsiveContainer>
+    <div className="bg-[url('/assets/moods.jpeg')] min-h-screen bg-gradient-to-b from-blue-50 to-indigo-100 p-6 bg-opacity-50">
+      <div className="bg-white p-6 rounded-2xl shadow-md w-full max-w-4xl mx-auto">
+        <h2 className="text-xl font-semibold text-gray-800 mb-4">
+          Mood History
+        </h2>
+        <Link href="/Home">
+          <button className="bg-white text-indigo-700 font-semibold px-4 py-2 rounded-xl hover:bg-indigo-100 shadow">
+            Back to Home
+          </button>
+        </Link>
+        <ResponsiveContainer width="100%" height={400}>
+          <ScatterChart margin={{ top: 20, right: 20, bottom: 20, left: 20 }}>
+            <XAxis
+              type="number"
+              dataKey="timestamp"
+              domain={["auto", "auto"]}
+              tickFormatter={(val) => {
+                const d = new Date(val);
+                return `${d.getDate()}/${d.getMonth() + 1}`;
+              }}
+              stroke="#ccc"
+              axisLine={false}
+              tickLine={false}
+            />
+            <YAxis
+              type="number"
+              dataKey="hour"
+              domain={[0, 24]}
+              tickFormatter={(val) => `${Math.floor(val)}:00`}
+              stroke="#ccc"
+              axisLine={false}
+              tickLine={false}
+            />
+            <Tooltip
+              formatter={(value, name, props) => {
+                if (name === "hour") {
+                  const hours = Math.floor(value);
+                  const minutes = Math.round((value - hours) * 60);
+                  return `${hours}:${minutes.toString().padStart(2, "0")}`;
+                }
+                return value;
+              }}
+              labelFormatter={(val) => {
+                const d = new Date(val);
+                return d.toLocaleDateString();
+              }}
+            />
+            <Scatter data={moodLogs} shape={<EmojiShape />} />
+          </ScatterChart>
+        </ResponsiveContainer>
+      </div>
     </div>
   );
 }

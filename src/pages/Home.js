@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useState } from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useUser } from "./context/userContext";
 import MoodEntries from "./MoodEntries";
 import MoodHistory from "./MoodHistory";
@@ -39,6 +40,7 @@ export default function Home() {
       const data = await res.json();
       if (res.OK) {
         console.log("response", res);
+        Router.push("/QouteWindow");
       }
     } catch (e) {
       console.log("Error in saving mood!", e);
@@ -62,15 +64,6 @@ export default function Home() {
     }
   };
 
-  const openMoodHistory = async () => {
-    // const res = await fetch("/api/moodHistory");
-    setActiveTab("moodHistory");
-  };
-  const openMoodEntries = async () => {
-    // const res = await fetch("/api/moodEntry");
-    setActiveTab("moodEntries");
-  };
-
   return (
     <div className="bg-[url('/assets/moods.jpeg')] min-h-screen bg-gradient-to-b from-blue-50 to-indigo-100 p-6 bg-opacity-50">
       <div className="max-w-3xl mx-auto">
@@ -84,87 +77,77 @@ export default function Home() {
           </button>
         </div>
         <div className="flex justify-center gap-4 mb-6">
-          <button
-            className="bg-white text-indigo-700 font-semibold px-4 py-2 rounded-xl hover:bg-indigo-100 shadow"
-            onClick={() => openMoodHistory()}
-          >
-            Mood History
-          </button>
-          <button
-            className="bg-white text-indigo-700 font-semibold px-4 py-2 rounded-xl hover:bg-indigo-100 shadow"
-            onClick={() => openMoodEntries()}
-          >
-            Journal Entries
-          </button>
-        </div>
+          <Link href="/MoodHistory">
+            <button className="bg-white text-indigo-700 font-semibold px-4 py-2 rounded-xl hover:bg-indigo-100 shadow">
+              Mood History
+            </button>
+          </Link>
 
-        {!openAi && activeTab == "home" ? (
-          <>
-            <div className="bg-white bg-opacity-50 rounded-2xl shadow p-6 mb-8 ">
-              <>
-                <h2 className="text-xl font-semibold mb-4 text-gray-700">
-                  Hi {user?.name}! How are you feeling today?
-                </h2>
-                <div className="grid grid-cols-3 gap-4">
-                  {emotions.map((mood) => (
-                    <div className="display:flex flex-direction:column">
-                      <div>
-                        <Image
-                          src={mood.img}
-                          width={100}
-                          height={100}
-                          alt="mood"
-                        />
-                      </div>
-                      <button
-                        key={mood.name}
-                        className="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-medium py-2 px-4 rounded-xl"
-                        onClick={() => addMoodEntry(mood.name)}
-                      >
-                        {mood.name}
-                      </button>
+          <Link href="/MoodEntries">
+            <button className="bg-white text-indigo-700 font-semibold px-4 py-2 rounded-xl hover:bg-indigo-100 shadow">
+              Journal Entries
+            </button>
+          </Link>
+        </div>
+        <>
+          <div className="bg-white bg-opacity-50 rounded-2xl shadow p-6 mb-8 ">
+            <>
+              <h2 className="text-xl font-semibold mb-4 text-gray-700">
+                Hi {user?.name}! How are you feeling today?
+              </h2>
+              <div className="grid grid-cols-3 gap-4">
+                {emotions.map((mood) => (
+                  <div className="display:flex flex-direction:column">
+                    <div>
+                      <Image
+                        src={mood.img}
+                        width={100}
+                        height={100}
+                        alt="mood"
+                      />
                     </div>
-                  ))}
-                </div>
-              </>
-            </div>
-            {/* Quote Card */}
-            <div className="bg-white rounded-2xl shadow p-6 mb-8">
-              <h2 className="text-xl font-semibold mb-4 text-gray-700">
-                Your Quote
-              </h2>
-              <p className="text-lg italic text-gray-600">
-                "The best way to predict the future is to create it."
-              </p>
-            </div>
-            {/* Mood Journal */}
-            <div className="bg-white rounded-2xl shadow p-6">
-              <h2 className="text-xl font-semibold mb-4 text-gray-700">
-                Mood Journal
-              </h2>
-              <textarea
-                placeholder="Write how you feel..."
-                className="w-full p-4 border border-gray-300 rounded-xl resize-none h-32 focus:outline-none focus:ring-2 focus:ring-indigo-300"
-                onChange={(e) => {
-                  setJournal(e.target.value);
-                }}
-                value={journal}
-              ></textarea>
-              <button
-                className="mt-4 bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700"
-                onClick={() => saveJournal()}
-              >
-                Save Entry
-              </button>
-            </div>
-          </>
-        ) : activeTab == "moodEntries" ? (
-          <MoodEntries setActiveTab={setActiveTab} activeTab={activeTab} />
-        ) : activeTab == "moodHistory" ? (
-          <MoodHistory setActiveTab={setActiveTab} activeTab={activeTab} />
-        ) : (
-          <QouteWindow mood={mood} name={user?.name} />
-        )}
+                    <button
+                      key={mood.name}
+                      className="bg-indigo-100 hover:bg-indigo-200 text-indigo-700 font-medium py-2 px-4 rounded-xl"
+                      onClick={() => addMoodEntry(mood.name)}
+                    >
+                      {mood.name}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </>
+          </div>
+          {/* Quote Card */}
+          {/* <div className="bg-white rounded-2xl shadow p-6 mb-8">
+            <h2 className="text-xl font-semibold mb-4 text-gray-700">
+              Your Quote
+            </h2>
+            <p className="text-lg italic text-gray-600">
+              "The best way to predict the future is to create it."
+            </p>
+          </div> */}
+          {/* Mood Journal */}
+          <div className="bg-white rounded-2xl shadow p-6">
+            <h2 className="text-xl font-semibold mb-4 text-gray-700">
+              Mood Journal
+            </h2>
+            <textarea
+              placeholder="Write how you feel..."
+              className="w-full p-4 border border-gray-300 rounded-xl resize-none h-32 focus:outline-none focus:ring-2 focus:ring-indigo-300"
+              onChange={(e) => {
+                setJournal(e.target.value);
+              }}
+              value={journal}
+            ></textarea>
+            <button
+              className="mt-4 bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700"
+              onClick={() => saveJournal()}
+            >
+              Save Entry
+            </button>
+          </div>
+        </>
       </div>
     </div>
   );
