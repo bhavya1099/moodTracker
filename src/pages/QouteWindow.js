@@ -1,11 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { OpenAI } from "openai";
 import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/router";
 import SpotifyPage from "./SpotifyPage";
 
-export default function QuoteWindow({ mood, name }) {
+export default function QuoteWindow() {
   const [quote, setQuote] = useState("");
   const [openSpotify, setOpenSpotify] = useState(false);
+  const router = useRouter();
+
+  const { mood } = router.query;
   console.log("mood value", mood);
   useEffect(() => {
     const fetchQuote = async () => {
@@ -38,9 +43,9 @@ export default function QuoteWindow({ mood, name }) {
   const chooseImg = () => {
     const images = {
       Sad: "/assets/JoyandSad.jpeg",
-      Joy: "/assets/happy.jpeg",
+      Happy: "/assets/happy.jpeg",
       Ennui: "/assets/ennui.jpeg",
-      Anxiety: "/assets/joyandanxiety.jpeg",
+      Anxious: "/assets/joyandanxiety.jpeg",
       Disgust: "/assets/disgustandjoy.jpeg",
       Angry: "/assets/angerandjoy.jpeg",
     };
@@ -50,21 +55,26 @@ export default function QuoteWindow({ mood, name }) {
   return (
     <>
       {/* <button onClick={fetchQuote}>Get Quote</button> */}
-
-      <Image src={chooseImg()} width={300} height={300} alt="mood" />
-      <div className="bg-white bg-opacity-50 rounded-2xl shadow p-6 mb-8 ">
-        <p>{quote}</p>
+      <div className="bg-[url('/assets/moods.jpeg')] min-h-screen bg-gradient-to-b from-blue-50 to-indigo-100 p-6 bg-opacity-50">
+        <div className="max-w-3xl mx-auto">
+          <Image src={chooseImg()} width={300} height={300} alt="mood" />
+          <div className="bg-white bg-opacity-50 rounded-2xl shadow p-6 mb-8 ">
+            <p>{quote}</p>
+          </div>
+          <Link href="/Home">
+            <button className="mt-4 bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700">
+              Thanks, I feel better.
+            </button>
+          </Link>
+          <button
+            onClick={() => setOpenSpotify(true)}
+            className="mt-4 bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700"
+          >
+            Meh, I still feel the same.
+          </button>
+          {openSpotify && <SpotifyPage />}
+        </div>
       </div>
-      <button className="mt-4 bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700">
-        Thanks, I feel better.
-      </button>
-      <button
-        onClick={() => setOpenSpotify(true)}
-        className="mt-4 bg-indigo-600 text-white px-4 py-2 rounded-xl hover:bg-indigo-700"
-      >
-        Meh, I still feel the same.
-      </button>
-      {openSpotify && <SpotifyPage />}
     </>
   );
 }

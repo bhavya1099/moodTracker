@@ -3,16 +3,15 @@ import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { useUser } from "./context/userContext";
-import MoodEntries from "./MoodEntries";
-import MoodHistory from "./MoodHistory";
-import QouteWindow from "./QouteWindow.js";
+import { useRouter } from "next/router";
+
 export default function Home() {
   const [emotions, setEmotions] = useState([]);
   const [openAi, setOpenAi] = useState(false);
   const [mood, setMood] = useState("");
   const [journal, setJournal] = useState("");
-  const [activeTab, setActiveTab] = useState("home");
   const { logout, user, setUser } = useUser();
+  const router = useRouter();
 
   let emotionsArray = [
     { img: "/assets/happy.jpeg", name: "Happy" },
@@ -38,9 +37,9 @@ export default function Home() {
         body: JSON.stringify({ email, moodEntry, user }),
       });
       const data = await res.json();
-      if (res.OK) {
+      if (data) {
         console.log("response", res);
-        Router.push("/QouteWindow");
+        router.push(`/QouteWindow?mood=${moodEntry}`);
       }
     } catch (e) {
       console.log("Error in saving mood!", e);
